@@ -23,16 +23,21 @@
   :group 'gitorious)
 
 
-(let* ((gitorious-user "robert@example.net")
-       (gitorious-pass "")
-       (gitorious-host "www.example.net")
-       (url-request-extra-headers `(("Accept" . "text/xml")
-                                    ("Authorization" . ,(concat "Basic "
-                                                              (base64-encode-string
-                                                               (concat gitorious-user ":" gitorious-pass))))))
-                                  
-       (callback (lambda (status)
-                   (switch-to-buffer (current-buffer)))))
-  (url-retrieve (concat "http://" gitorious-host)  callback))
+(defmacro gitorious-with-auth (&rest body)
+  `(let* ((gitorious-user "robert@example.net")
+          (gitorious-pass "")
+          (url-request-extra-headers `(("Accept" . "text/xml")
+                                      ("Authorization" . ,(concat "Basic "
+                                                                  (base64-encode-string
+                                                                   (concat gitorious-user ":" gitorious-pass)))))))
+     ,@body))
+
+(gitorious-with-auth
+ (url-retrieve "http://www.example.net" (lambda (status)
+                                                   (switch-to-buffer (current-buffer)))))
+
+
+
+
 
 
