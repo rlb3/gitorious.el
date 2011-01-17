@@ -26,10 +26,13 @@
 (let* ((gitorious-user "robert@example.net")
        (gitorious-pass "")
        (gitorious-host "www.example.net")
-       (url-request-extra-headers '(("Accept" . "text/xml")))
+       (url-request-extra-headers `(("Accept" . "text/xml")
+                                    ("Authorization" . ,(concat "Basic "
+                                                              (base64-encode-string
+                                                               (concat gitorious-user ":" gitorious-pass))))))
+                                  
        (callback (lambda (status)
                    (switch-to-buffer (current-buffer)))))
-  (url-get-authentication (format "http://%s"  gitorious-host) nil "basic" t)
   (url-retrieve (concat "http://" gitorious-host)  callback))
 
 
