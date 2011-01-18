@@ -40,7 +40,18 @@
              (url-hexify-string (cdr param))))
    params "&"))
 
+(defun gitorious-request (url &optional callback params)
+  (let ((url-request-data (when params (gitorious-make-query-string params))))
+    (gitorious
+     (http-get "https://www.example.net/cpanel-whm/cpanel-whm/merge_requests" (or callback 'default-callback params)))))
+
+
 (gitorious-make-query-string '(("key1" . "val%ue1")
                                ("key2" . "value2")))
 (gitorious
- (http-get "http://www.example.net/cpanel-whm/cpanel-whm/merge_requests" 'default-callback))
+ (http-get "https://www.example.net/cpanel-whm/cpanel-whm/merge_requests" 'default-callback))
+
+(gitorious-request "https://www.example.net/cpanel-whm/cpanel-whm/merge_requests")
+(gitorious-request "https://www.example.net/cpanel-whm/cpanel-whm/merge_requests" nil '(("key1" . "val%ue1")
+                                                                                                 ("key2" . "value2")))
+
