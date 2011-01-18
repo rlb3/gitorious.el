@@ -27,9 +27,23 @@
                                        ("Authorization" . ,(concat "Basic "
                                                                    (base64-encode-string
                                                                     (concat gitorious-user ":" gitorious-pass)))))))
-     (labels ((retrieve (&rest args) (apply 'url-retrieve args))
-              (default-callback (status) (switch-to-buffer (current-buffer))))
+     (labels ((retrieve (&rest args)
+                        (apply 'url-retrieve args))
+              (default-callback (status)
+                (switch-to-buffer (current-buffer))))
        ,@body)))
+
+
+(defun gitorious-make-query-string (params)
+  (mapconcat
+   (lambda (param)
+     (concat (url-hexify-string (car param)) "="
+             (url-hexify-string (cdr param))))
+   params "&"))
+
+(gitorious-make-query-string '(("key1" . "val%ue1")
+                               ("key2" . "value2")))
+
 
 (gitorious-with-auth
  (retrieve "http://www.example.net" 'default-callback))
