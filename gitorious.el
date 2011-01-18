@@ -22,17 +22,16 @@
   :type 'string
   :group 'gitorious)
 
-(defmacro gitorious-with-auth (&rest body)
+(defmacro gitorious (&rest body)
   `(let* ((url-request-extra-headers `(("Accept" . "text/xml")
                                        ("Authorization" . ,(concat "Basic "
                                                                    (base64-encode-string
                                                                     (concat gitorious-user ":" gitorious-pass)))))))
-     (labels ((retrieve (&rest args)
+     (labels ((http-get (&rest args)
                         (apply 'url-retrieve args))
               (default-callback (status)
                 (switch-to-buffer (current-buffer))))
        ,@body)))
-
 
 (defun gitorious-make-query-string (params)
   (mapconcat
@@ -43,14 +42,5 @@
 
 (gitorious-make-query-string '(("key1" . "val%ue1")
                                ("key2" . "value2")))
-
-
-(gitorious-with-auth
- (retrieve "http://www.example.net" 'default-callback))
-
-
-
-
-
-
-
+(gitorious
+ (http-get "http://www.example.net/cpanel-whm/cpanel-whm/merge_requests" 'default-callback))
