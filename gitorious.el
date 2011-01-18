@@ -22,19 +22,18 @@
   :type 'string
   :group 'gitorious)
 
-
 (defmacro gitorious-with-auth (&rest body)
-  `(let* ((gitorious-user "robert@example.net")
-          (gitorious-pass "")
-          (url-request-extra-headers `(("Accept" . "text/xml")
-                                      ("Authorization" . ,(concat "Basic "
-                                                                  (base64-encode-string
-                                                                   (concat gitorious-user ":" gitorious-pass)))))))
-     ,@body))
+  `(let* ((url-request-extra-headers `(("Accept" . "text/xml")
+                                       ("Authorization" . ,(concat "Basic "
+                                                                   (base64-encode-string
+                                                                    (concat gitorious-user ":" gitorious-pass)))))))
+     (labels ((retrieve (&rest args) (apply 'url-retrieve args))
+              (default-callback (status) (switch-to-buffer (current-buffer))))
+       ,@body)))
 
 (gitorious-with-auth
- (url-retrieve "http://www.example.net" (lambda (status)
-                                                   (switch-to-buffer (current-buffer)))))
+ (retrieve "http://www.example.net" 'default-callback))
+
 
 
 
