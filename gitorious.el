@@ -43,15 +43,34 @@
 (defun gitorious-request (url &optional callback params)
   (let ((url-request-data (when params (gitorious-make-query-string params))))
     (gitorious
-     (http-get "https://www.example.net/cpanel-whm/cpanel-whm/merge_requests" (or callback 'default-callback params)))))
+     (http-get url (or callback 'default-callback params)))))
+
+(defun xml-callback (status)
+  (goto-char (point-min))
+  (search-forward "<?xml")
+  (let ((xml (gitorious-xml-cleanup (xml-parse-region (match-beginning 0) (point-max)))))
+    (with-temp-buffer (get-buffer-create "*xml*"))
+    (print xml (get-buffer-create "*xml*"))
+    (switch-to-buffer (get-buffer-create "*xml*"))))
+
+(defun gitorious-xml-cleanup (xml-list)
+  (mapcar 'gitorious-xml-cleanup-node xml-list))
+
+(defun gitorious-xml-cleanup-node (node)
+  (apply 'list
+         (xml-node-name node)
+         (xml-node-attributes node)
+         (let (new)
+           (dolist (child (xml-node-children node))
+             (if (stringp child)
+                 (or (string-match "\\`[ \t\n]+\\'" child)
+                     (push child new))
+               (push (gitorious-xml-cleanup-node child) new)))
+           (nreverse new))))
 
 
-(gitorious-make-query-string '(("key1" . "val%ue1")
-                               ("key2" . "value2")))
-(gitorious
- (http-get "https://www.example.net/cpanel-whm/cpanel-whm/merge_requests" 'default-callback))
+(gitorious-request "https://www.example.net/cpanel-whm/cpanel-whm/merge_requests" 'xml-callback)
 
-(gitorious-request "https://www.example.net/cpanel-whm/cpanel-whm/merge_requests")
-(gitorious-request "https://www.example.net/cpanel-whm/cpanel-whm/merge_requests" nil '(("key1" . "val%ue1")
-                                                                                                 ("key2" . "value2")))
+;;; (gitorious-request "https://www.example.net/cpanel-whm/cpanel-whm/merge_requests" nil '(("key1" . "val%ue1")
+;;;                                                                                                  ("key2" . "value2")))
 
